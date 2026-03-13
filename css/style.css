@@ -15,6 +15,9 @@
   --shadow2:0 26px 80px rgba(2,6,23,.12);
 
   --radius:18px;
+
+  /* ใช้ค่านี้คุมตำแหน่ง header ใต้ topbar */
+  --topbar-h: 46px;
 }
 
 /* Base */
@@ -42,12 +45,17 @@ img{ max-width:100%; display:block; }
   margin-inline:auto;
 }
 
-/* Topbar (ดำ) */
+/* ============================================
+   Topbar (ดำ) - sticky ตามเลื่อน
+============================================ */
 .topbar{
-  position:sticky; top:0; z-index:60;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
   background:linear-gradient(180deg, #000, #0a0a0a);
   border-bottom:1px solid rgba(255,255,255,.14);
 }
+
 .topbar__inner{
   display:flex;
   align-items:center;
@@ -55,7 +63,9 @@ img{ max-width:100%; display:block; }
   gap:12px;
   padding:10px 0;
   font-size:.95rem;
+  min-height: var(--topbar-h); /* ให้ความสูงนิ่ง */
 }
+
 .topbar__left{
   display:flex;
   gap:10px;
@@ -66,6 +76,13 @@ img{ max-width:100%; display:block; }
 .topbar__left a{ color:rgba(255,255,255,.72); }
 .topbar__left a:hover{ color:#fff; }
 .sep{ opacity:.6; }
+
+/* ถ้ามีฝั่งขวา (เช่นปุ่มภาษา) */
+.topbar__right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
 
 .pill{
   padding:.5rem .9rem;
@@ -78,9 +95,13 @@ img{ max-width:100%; display:block; }
 .pill:hover{ border-color:rgba(255,255,255,.32); filter:brightness(1.03); transform:translateY(-1px); }
 .pill:active{ transform:translateY(0); }
 
-/* Header (ดำ) */
+/* ============================================
+   Header (ดำ) - sticky ใต้ topbar
+============================================ */
 .header{
-  position:sticky; top:46px; z-index:55;
+  position:sticky;
+  top: var(--topbar-h);
+  z-index: 900;
   background:linear-gradient(180deg, #000, #0a0a0a);
   border-bottom:1px solid rgba(255,255,255,.14);
   box-shadow:0 10px 28px rgba(0,0,0,.26);
@@ -91,6 +112,7 @@ img{ max-width:100%; display:block; }
   justify-content:space-between;
   gap:16px;
   padding:14px 0;
+  position:relative;
 }
 
 .brand{ display:flex; align-items:center; gap:10px; }
@@ -408,9 +430,12 @@ button:focus-visible{
   border-radius:12px;
 }
 
-section, footer{ scroll-margin-top: 92px; }
+/* ปรับ scroll-margin-top ให้สัมพันธ์กับ topbar+header (46 + ประมาณ 68) */
+section, footer{ scroll-margin-top: 120px; }
 
-/* Responsive */
+/* ============================================
+   Responsive
+============================================ */
 @media (max-width: 980px){
   .burger{ display:flex; }
 
@@ -450,11 +475,35 @@ section, footer{ scroll-margin-top: 92px; }
   .brand__logo{ width:148px; }
 }
 
+/* มือถือเล็ก: แก้ปัญหา TH/EN บัง email โดยทำ topbar เป็น 2 แถว */
+@media (max-width: 520px){
+  .topbar__inner{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 0;
+  }
+
+  .topbar__left{
+    gap: 8px;
+  }
+
+  .topbar__right{
+    justify-content: flex-end;
+  }
+
+  /* ถ้า email ยาว ให้ขึ้นบรรทัดใหม่ */
+  .topbar__left a[href^="mailto:"]{
+    flex-basis: 100%;
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce){
   html{ scroll-behavior:auto; }
   .btn, .nav, .card, .fab-line{ transition:none !important; }
 }
+
 /* =========================
    Home Slider
 ========================= */
@@ -606,14 +655,11 @@ section, footer{ scroll-margin-top: 92px; }
 
 @media (max-width: 980px){
   .slider__btn{ display:none; } /* มือถือใช้ swipe เป็นหลัก */
-  .slider__content{
-    padding: 38px 0;
-  }
+  .slider__content{ padding: 38px 0; }
   .slider__content h1,
-  .slider__content h2{
-    max-width: 26ch;
-  }
+  .slider__content h2{ max-width: 26ch; }
 }
+
 .page-title{
   margin:0;
   font-size: clamp(1.8rem, 3vw, 2.4rem);
@@ -659,17 +705,17 @@ section, footer{ scroll-margin-top: 92px; }
   .split{ grid-template-columns: 1fr; }
   .media-box, .media-box__placeholder{ min-height: 220px; }
 }
+
 body.is-locked{ overflow:hidden; }
-.header__inner{ position:relative; }
-/* ===== Patch: menu + scroll lock ===== */
 
 /* ============================================
-   Language Toggle Button
-   ============================================ */
+   Language Toggle Button (แก้: ไม่ fixed แล้ว)
+============================================ */
 .lang-toggle-wrap {
   display: flex;
   align-items: center;
-  margin-left: 1rem;
+  /* เอา margin-left เดิมไว้ได้ แต่ไม่จำเป็นเสมอ */
+  margin-left: 0;
 }
 
 #lang-toggle {
@@ -678,12 +724,13 @@ body.is-locked{ overflow:hidden; }
   border-radius: 20px;
   padding: 4px 12px;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   transition: border-color 0.2s, background 0.2s;
   font-size: 0.95rem;
   color: #fff;
+  white-space: nowrap;
 }
 
 #lang-toggle:hover {
@@ -696,187 +743,9 @@ body.is-locked{ overflow:hidden; }
   opacity: 0.5;
   transition: opacity 0.2s;
 }
-
-.lang-flag.active {
-  opacity: 1;
-}
+.lang-flag.active { opacity: 1; }
 
 .lang-sep {
   color: rgba(255, 255, 255, 0.4);
   font-size: 0.8rem;
-}
-
-#lang-toggle{
-  position: fixed;
-  top: 10px;
-  right: 12px;
-  z-index: 9999;
-}
-
-/* ============================================
-   RESPONSIVE PATCH (Desktop & Mobile)
-   Put this at the END of style.css
-============================================ */
-
-/* 1) Global: sizing + prevent horizontal overflow */
-*, *::before, *::after { box-sizing: border-box; }
-html, body { width: 100%; overflow-x: hidden; }
-
-img, video, svg, canvas {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* If you have long links/text that cause overflow */
-a, p, li, span, h1, h2, h3, h4 {
-  overflow-wrap: anywhere;
-}
-
-/* 2) Container: fluid with max width */
-.container{
-  width: min(1100px, 100% - 32px);
-  margin-inline: auto;
-}
-
-/* 3) Topbar/Header: wrap gracefully on small screens */
-.topbar__inner,
-.header__inner{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.topbar__left{
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap; /* important */
-}
-
-/* Keep the language button visually consistent */
-#lang-toggle{
-  white-space: nowrap;
-}
-
-/* 4) Generic 2-column sections (.split) -> stack on small screens */
-.split{
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 24px;
-  align-items: start;
-}
-
-@media (max-width: 900px){
-  .split{
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 5) Section paddings: reduce on mobile */
-.section{
-  padding-block: clamp(28px, 5vw, 60px);
-}
-
-/* 6) Typography: scale down slightly on small screens (keeps same look) */
-.page-title{
-  font-size: clamp(28px, 4.2vw, 44px);
-  line-height: 1.15;
-}
-
-h2{
-  font-size: clamp(20px, 3.2vw, 30px);
-  line-height: 1.25;
-}
-
-p, li{
-  font-size: clamp(15px, 2.2vw, 17px);
-  line-height: 1.7;
-}
-
-/* 7) Buttons: wrap and full-width on narrow screens */
-.hero__actions{
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-@media (max-width: 520px){
-  .hero__actions > .btn{
-    width: 100%;
-    justify-content: center;
-    text-align: center;
-  }
-}
-
-/* 8) Cards/Grids (if your CSS uses a grid for services/projects) */
-.grid,
-.cards,
-.projects-grid,
-.services-grid{
-  display: grid;
-  gap: 18px;
-}
-
-/* If desktop has 3 columns, make it responsive */
-@media (min-width: 901px){
-  .grid,
-  .cards,
-  .projects-grid,
-  .services-grid{
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 900px){
-  .grid,
-  .cards,
-  .projects-grid,
-  .services-grid{
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 560px){
-  .grid,
-  .cards,
-  .projects-grid,
-  .services-grid{
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 9) Tables (if any) make scroll instead of breaking layout */
-.table-wrap{
-  overflow-x: auto;
-}
-table{
-  width: 100%;
-  border-collapse: collapse;
-}
-
-/* 10) Media box placeholder (services.html) keep ratio and responsive */
-.media-box{
-  width: 100%;
-}
-.media-box__placeholder{
-  width: 100%;
-  min-height: 240px;
-  border-radius: 14px;
-}
-
-/* 11) Nav: prevent overflow on small screens if nav is horizontal */
-.nav{
-  display: flex;
-  gap: 18px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-@media (max-width: 900px){
-  /* If you use burger menu via JS and .nav is toggled, keep it clean */
-  .nav{
-    gap: 12px;
-  }
 }
